@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cupcake Counting Game</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(to bottom, #87CEEB, #E0F7FA);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        h1 {
+            color: #FF6B6B;
+            font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            font-size: 24px;
+            color: #4A4A4A;
+            margin-bottom: 20px;
+        }
+        
+        .question {
+            font-size: 28px;
+            color: #4A4A4A;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .number {
+            font-size: 36px;
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+        
+        .game-area {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            position: relative;
+            min-height: 300px;
+        }
+        
+        .cupcakes-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            width: 60%;
+        }
+        
+        .cupcake {
+            width: 80px;
+            height: 80px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,20 C30,20 25,40 30,50 C15,50 10,65 30,75 L70,75 C90,65 85,50 70,50 C75,40 70,20 50,20 Z" fill="%23FF9FBF"/><path d="M30,75 L70,75 L65,95 L35,95 Z" fill="%23FFDAB9"/><circle cx="50" cy="35" r="8" fill="%23FF6B6B"/><circle cx="35" cy="40" r="6" fill="%23FF6B6B"/><circle cx="65" cy="40" r="6" fill="%23FF6B6B"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            cursor: pointer;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+        
+        .cupcake:hover {
+            transform: scale(1.1);
+        }
+        
+        .cupcake.dragging {
+            opacity: 0.5;
+        }
+        
+        .basket-container {
+            width: 35%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .basket {
+            width: 200px;
+            height: 150px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150"><path d="M20,40 C20,20 180,20 180,40 L160,130 L40,130 Z" fill="%23D2B48C"/><path d="M40,40 C40,10 160,10 160,40" stroke="%23A0522D" stroke-width="8" fill="none"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .basket-items {
+            position: absolute;
+            bottom: 20px;
+            left: 30px;
+            width: 140px;
+            height: 70px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .basket-items .cupcake {
+            width: 40px;
+            height: 40px;
+            margin: 2px;
+        }
+        
+        .counter {
+            font-size: 24px;
+            color: #4A4A4A;
+            font-weight: bold;
+        }
+        
+        .btn {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 20px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .btn-check {
+            background-color: #4C6CAF;
+        }
+        
+        .btn-check:hover {
+            background-color: #3A5998;
+        }
+        
+        .btn-next {
+            background-color: #FF6B6B;
+        }
+        
+        .btn-next:hover {
+            background-color: #FF5252;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(to bottom, #FFD700, #FFA500);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 80%;
+            animation: pop 0.5s;
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal h2 {
+            color: #FFFFFF;
+            font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .modal p {
+            color: #FFFFFF;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        
+        .sparkles {
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50"><polygon points="25,0 30,20 50,25 30,30 25,50 20,30 0,25 20,20" fill="%23FFD700"/></svg>');
+            background-size: contain;
+            animation: twinkle 1s linear infinite;
+        }
+        
+        @keyframes twinkle {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: scale(1) rotate(180deg); opacity: 1; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
+        }
+        
+        .cloud {
+            position: absolute;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><path d="M20,60 C20,40 40,30 60,40 C60,20 90,10 110,30 C130,10 170,20 170,50 C190,50 190,80 170,80 L40,80 C20,80 20,70 20,60 Z" fill="%23FFFFFF" fill-opacity="0.8"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: -1;
+        }
+        
+        .cloud-1 {
+            width: 200px;
+            height: 100px;
+            top: 50px;
+            left: -100px;
+            animation: moveCloud 60s linear infinite;
+        }
+        
+        .cloud-2 {
+            width: 150px;
+            height: 75px;
+            top: 150px;
+            right: -150px;
+            animation: moveCloud 50s linear infinite reverse;
+        }
+        
+        @keyframes moveCloud {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(100vw + 200px)); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Cupcake Counting Game</h1>
+        <p class="instructions">Drag and drop the correct number of cupcakes into the basket!</p>
+        <div class="question">How many cupcakes should we put in the basket? <span class="number" id="targetNumber">5</span></div>
+        
+        <div class="game-area">
+            <div class="cupcakes-container" id="cupcakesContainer">
+                <!-- Cupcakes will be generated here by JavaScript -->
+            </div>
+            
+            <div class="basket-container">
+                <div class="basket">
+                    <div class="basket-items" id="basketItems"></div>
+                </div>
+                <div class="counter">Count: <span id="currentCount">0</span></div>
+                <button class="btn btn-check" id="checkAnswerBtn">Check Answer</button>
+            </div>
+        </div>
+        
+        <button class="btn btn-next" id="newGameBtn" style="display: none;">New Game</button>
+    </div>
+    
+    <div class="modal" id="congratsModal">
+        <div class="modal-content">
+            <h2>Congratulations!</h2>
+            <p>You got it right! You placed <span class="number" id="correctNumber">5</span> cupcakes in the basket.</p>
+            <button class="btn btn-next" id="nextGameBtn">Play Again</button>
+            <div class="sparkles" id="sparkles"></div>
+        </div>
+    </div>
+    
+    <div class="modal" id="tryAgainModal">
+        <div class="modal-content">
+            <h2>Oops!</h2>
+            <p>That's not quite right. You need to place <span class="number" id="neededNumber">5</span> cupcakes in the basket.</p>
+            <button class="btn" id="tryAgainBtn">Try Again</button>
+        </div>
+    </div>
+    
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cupcakesContainer = document.getElementById('cupcakesContainer');
+            const basketItems = document.getElementById('basketItems');
+            const currentCountElement = document.getElementById('currentCount');
+            const checkAnswerBtn = document.getElementById('checkAnswerBtn');
+            const newGameBtn = document.getElementById('newGameBtn');
+            const nextGameBtn = document.getElementById('nextGameBtn');
+            const tryAgainBtn = document.getElementById('tryAgainBtn');
+            const congratsModal = document.getElementById('congratsModal');
+            const tryAgainModal = document.getElementById('tryAgainModal');
+            const targetNumberElement = document.getElementById('targetNumber');
+            const correctNumberElement = document.getElementById('correctNumber');
+            const neededNumberElement = document.getElementById('neededNumber');
+            const sparklesContainer = document.getElementById('sparkles');
+            
+            let targetNumber = 5;
+            let totalCupcakes = 10;
+            let currentCount = 0;
+            let draggingElement = null;
+            
+            // Initialize game
+            function initGame() {
+                // Clear previous game
+                cupcakesContainer.innerHTML = '';
+                basketItems.innerHTML = '';
+                currentCount = 0;
+                currentCountElement.textContent = currentCount;
+                
+                // Generate random target between 1 and 10
+                targetNumber = Math.floor(Math.random() * 5) + 1;  // 1 to 5 for easier play for kids
+                totalCupcakes = targetNumber + Math.floor(Math.random() * 5) + 5;  // Always have enough cupcakes
+                
+                targetNumberElement.textContent = targetNumber;
+                correctNumberElement.textContent = targetNumber;
+                neededNumberElement.textContent = targetNumber;
+                
+                // Create cupcakes
+                for (let i = 0; i < totalCupcakes; i++) {
+                    const cupcake = document.createElement('div');
+                    cupcake.className = 'cupcake';
+                    cupcake.draggable = true;
+                    
+                    // Add drag event listeners
+                    cupcake.addEventListener('dragstart', handleDragStart);
+                    cupcake.addEventListener('touchstart', handleTouchStart, { passive: false });
+                    
+                    cupcakesContainer.appendChild(cupcake);
+                }
+                
+                // Hide new game button, show check answer button
+                newGameBtn.style.display = 'none';
+                checkAnswerBtn.style.display = 'inline-block';
+            }
+            
+            // Drag and Drop functions
+            function handleDragStart(e) {
+                draggingElement = this;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.innerHTML);
+            }
+            
+            // Touch events for mobile compatibility
+            function handleTouchStart(e) {
+                e.preventDefault();
+                draggingElement = this;
+                this.classList.add('dragging');
+                
+                // Create clone for visual feedback
+                const clone = this.cloneNode(true);
+                clone.style.position = 'absolute';
+                clone.style.zIndex = 1000;
+                clone.style.opacity = '0.8';
+                document.body.appendChild(clone);
+                
+                const touch = e.touches[0];
+                const offsetX = touch.clientX - this.getBoundingClientRect().left;
+                const offsetY = touch.clientY - this.getBoundingClientRect().top;
+                
+                function handleTouchMove(e) {
+                    const touchMove = e.touches[0];
+                    clone.style.left = (touchMove.clientX - offsetX) + 'px';
+                    clone.style.top = (touchMove.clientY - offsetY) + 'px';
+                    
+                    // Check if over basket
+                    const basketRect = basketItems.getBoundingClientRect();
+                    if (
+                        touchMove.clientX > basketRect.left &&
+                        touchMove.clientX < basketRect.right &&
+                        touchMove.clientY > basketRect.top &&
+                        touchMove.clientY < basketRect.bottom
+                    ) {
+                        basketItems.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                    } else {
+                        basketItems.style.backgroundColor = 'transparent';
+                    }
+                }
+                
+                function handleTouchEnd(e) {
+                    document.removeEventListener('touchmove', handleTouchMove);
+                    document.removeEventListener('touchend', handleTouchEnd);
+                    draggingElement.classList.remove('dragging');
+                    basketItems.style.backgroundColor = 'transparent';
+                    document.body.removeChild(clone);
+                    
+                    // Check if released over basket
+                    const touch = e.changedTouches[0];
+                    const basketRect = basketItems.getBoundingClientRect();
+                    if (
+                        touch.clientX > basketRect.left &&
+                        touch.clientX < basketRect.right &&
+                        touch.clientY > basketRect.top &&
+                        touch.clientY < basketRect.bottom
+                    ) {
+                        // Add to basket
+                        moveCupcakeToBasket(draggingElement);
+                    }
+                    
+                    draggingElement = null;
+                }
+                
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                document.addEventListener('touchend', handleTouchEnd);
+            }
+            
+            // Move cupcake to basket
+            function moveCupcakeToBasket(cupcake) {
+                // Create a new cupcake in the basket
+                const basketCupcake = document.createElement('div');
+                basketCupcake.className = 'cupcake';
+                basketItems.appendChild(basketCupcake);
+                
+                // Remove original cupcake
+                cupcake.parentNode.removeChild(cupcake);
+                
+                // Update counter
+                currentCount++;
+                currentCountElement.textContent = currentCount;
+                
+                // Add click event to remove from basket
+                basketCupcake.addEventListener('click', function() {
+                    basketItems.removeChild(basketCupcake);
+                    
+                    // Add back to cupcakes container
+                    const newCupcake = document.createElement('div');
+                    newCupcake.className = 'cupcake';
+                    newCupcake.draggable = true;
+                    newCupcake.addEventListener('dragstart', handleDragStart);
+                    newCupcake.addEventListener('touchstart', handleTouchStart, { passive: false });
+                    cupcakesContainer.appendChild(newCupcake);
+                    
+                    // Update counter
+                    currentCount--;
+                    currentCountElement.textContent = currentCount;
+                });
+            }
+            
+            // Set up drop zone
+            basketItems.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+            });
+            
+            basketItems.addEventListener('dragleave', function() {
+                this.style.backgroundColor = 'transparent';
+            });
+            
+            basketItems.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = 'transparent';
+                
+                if (draggingElement) {
+                    moveCupcakeToBasket(draggingElement);
+                    draggingElement.classList.remove('dragging');
+                    draggingElement = null;
+                }
+            });
+            
+            // Check answer
+            checkAnswerBtn.addEventListener('click', function() {
+                if (currentCount === targetNumber) {
+                    congratsModal.style.display = 'flex';
+                    createSparkles();
+                } else {
+                    tryAgainModal.style.display = 'flex';
+                }
+            });
+            
+            // New game
+            newGameBtn.addEventListener('click', initGame);
+            nextGameBtn.addEventListener('click', function() {
+                congratsModal.style.display = 'none';
+                initGame();
+            });
+            
+            tryAgainBtn.addEventListener('click', function() {
+                tryAgainModal.style.display = 'none';
+            });
+            
+            // Create sparkles animation
+            function createSparkles() {
+                sparklesContainer.innerHTML = '';
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const sparkle = document.createElement('div');
+                        sparkle.className = 'sparkle';
+                        sparkle.style.left = Math.random() * 100 + '%';
+                        sparkle.style.top = Math.random() * 100 + '%';
+                        sparkle.style.animationDelay = Math.random() + 's';
+                        sparklesContainer.appendChild(sparkle);
+                        
+                        // Remove sparkle after animation
+                        setTimeout(() => {
+                            sparkle.remove();
+                        }, 1000);
+                    }, i * 100);
+                }
+            }
+            
+            // Initialize first game
+            initGame();
+        });
+    </script>
+</body>
+</html>
